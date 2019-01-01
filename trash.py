@@ -11,7 +11,6 @@ import colorama
 TRASH_DIR = os.path.expanduser('~/.trash')
 N_DAYS_TO_KEEP = 3
 
-
 # These directories are not removed.
 PROTECTED_DIRS = ['/bin', '/boot', '/dev', '/etc', '/home', '/initrd', '/lib',
                   '/lib32', '/lib64', '/proc', '/root', '/sbin', '/sys',
