@@ -89,7 +89,7 @@ def clean_old():
         except ValueError:
             continue
         if date < today - days_to_keep:
-            shutil.rmtree(d)
+            shutil.rmtree(os.path.join(TRASH_DIR, d))
 
 
 def main():
