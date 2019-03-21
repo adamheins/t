@@ -63,8 +63,6 @@ def move_uniq(src, dst):
         unique in dst. '''
     name = os.path.basename(src)
     name = uniq_name(name, dst)
-    print(dst)
-    print(name)
     dst = os.path.join(dst, name)
     shutil.move(src, dst)
 

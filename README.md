@@ -15,7 +15,8 @@ simple, yet safe.
   system directories.
 * Prompts user for confirmation before removing multiple items.
 * Keeps deleted items for a configurable number of days before automatically
-  permanently deleting.
+  permanently deleting them.
+* Only deletes multiple files if no error occurs with any one of them.
 
 ## License
 MIT - see the LICENSE file.
