@@ -126,11 +126,13 @@ def main():
             print('{} is protected. Aborting.'.format(yellow(arg)))
             return 1
 
-    # Check for directory (that isn't a symlink) without the recursive flag.
     for arg in args:
-        if not os.path.exists(arg):
+        # Use lexists because we also want to be able to delete broken symlinks.
+        if not os.path.lexists(arg):
             print('Could not find {}. Aborting.'.format(yellow(arg)))
             return 1
+
+        # Check for directory (that isn't a symlink) without the recursive flag.
         if os.path.isdir(arg) and not os.path.islink(arg) and not recurse:
             print('{} is a directory, but {} flag was not used. Aborting.'
                   .format(yellow(arg), yellow('-r')))
