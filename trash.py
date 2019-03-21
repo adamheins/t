@@ -9,7 +9,7 @@ import colorama
 
 
 TRASH_DIR = os.path.expanduser('~/.trash')
-N_DAYS_TO_KEEP = 3
+N_DAYS_TO_KEEP = 7
 
 # These directories are not removed.
 PROTECTED_DIRS = ['/bin', '/boot', '/dev', '/etc', '/home', '/initrd', '/lib',
@@ -19,13 +19,15 @@ PROTECTED_DIRS = ['/bin', '/boot', '/dev', '/etc', '/home', '/initrd', '/lib',
                   '/usr/local/share', '/usr/sbin', '/usr/share', '/usr/src',
                   '/var']
 
-DATE_FMT = '%Y-%m-%d'
 HELP_TEXT = '''
 usage: trash [-r] file1 [file2...]
 
 options:
   -r  Recursively remove directories.
 '''.strip()
+
+DATE_FMT = '%Y-%m-%d'
+UNIQ_FILENAME_FMT = '{root}__{n}{ext}'
 
 
 def yellow(s):
@@ -41,13 +43,17 @@ def confirm(prompt):
     return False
 
 
-def uniq_name(name, d):
-    ''' Return a unique name based on `name` relative to the files in
-        directory `d`. '''
+def uniq_name(filename, dirname):
+    ''' Return a unique name based on `filename` relative to the files in
+        directory `dirname`. '''
+    root, ext = os.path.splitext(filename)
+
     counter = 1
-    new_name = name
-    while os.path.exists(os.path.join(d, new_name)):
-        new_name = '{}__{}'.format(name, counter)
+    new_name = filename
+
+    # Increment appended number until name collision goes away.
+    while os.path.exists(os.path.join(dirname, new_name)):
+        new_name = UNIQ_FILENAME_FMT.format(root=root, ext=ext, n=counter)
         counter += 1
     return new_name
 
@@ -55,12 +61,15 @@ def uniq_name(name, d):
 def move_uniq(src, dst):
     ''' Move src to directory dst, creating a unique name for src so that it is
         unique in dst. '''
-    name = uniq_name(src, dst)
+    name = os.path.basename(src)
+    name = uniq_name(name, dst)
+    print(dst)
+    print(name)
     dst = os.path.join(dst, name)
     shutil.move(src, dst)
 
 
-def mkdirs():
+def make_today_dir():
     ''' Make directories for today's trash. '''
     # Create trash directory if it doesn't exist.
     if not os.path.exists(TRASH_DIR):
@@ -75,7 +84,7 @@ def mkdirs():
     return today_dir
 
 
-def clean_old():
+def remove_old_trash():
     ''' Remove old trash that has been around for too long. '''
     dirs = os.listdir(TRASH_DIR)
     today = datetime.datetime.now()
@@ -129,8 +138,8 @@ def main():
                   .format(yellow(arg), yellow('-r')))
             return 1
 
-    today_dir = mkdirs()
-    clean_old()
+    today_dir = make_today_dir()
+    remove_old_trash()
 
     for arg in args:
         move_uniq(arg, today_dir)
