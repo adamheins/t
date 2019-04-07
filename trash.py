@@ -27,6 +27,7 @@ options:
 '''.strip()
 
 DATE_FMT = '%Y-%m-%d'
+TIME_FMT = '%H-%M-%S'
 UNIQ_FILENAME_FMT = '{root}__{n}{ext}'
 
 
@@ -67,19 +68,17 @@ def move_uniq(src, dst):
     shutil.move(src, dst)
 
 
-def make_today_dir():
-    ''' Make directories for today's trash. '''
-    # Create trash directory if it doesn't exist.
-    if not os.path.exists(TRASH_DIR):
-        os.mkdir(TRASH_DIR)
+def make_now_dir():
+    ''' Make directories for the trash. '''
+    # trash is filed under <TRASH_DIR>/YYYY-MM-DD/HH-MM-SS
+    now = datetime.datetime.now()
+    date_dir = now.strftime(DATE_FMT)
+    time_dir = now.strftime(TIME_FMT)
 
-    # Make today's trash directory.
-    today = datetime.datetime.now()
-    today_dir = os.path.join(TRASH_DIR, today.strftime(DATE_FMT))
-    if not os.path.exists(today_dir):
-        os.mkdir(today_dir)
+    path = os.path.join(TRASH_DIR, date_dir, time_dir)
+    os.makedirs(path, exist_ok=True)
 
-    return today_dir
+    return path
 
 
 def remove_old_trash():
@@ -138,11 +137,11 @@ def main():
                   .format(yellow(arg), yellow('-r')))
             return 1
 
-    today_dir = make_today_dir()
+    now_dir = make_now_dir()
     remove_old_trash()
 
     for arg in args:
-        move_uniq(arg, today_dir)
+        move_uniq(arg, now_dir)
 
     return 0
 
