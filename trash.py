@@ -3,9 +3,9 @@
 import datetime
 import os
 import shutil
-import sys
 
 import colorama
+from docopt import docopt
 
 
 TRASH_DIR = os.path.expanduser('~/.trash')
@@ -20,9 +20,10 @@ PROTECTED_DIRS = ['/bin', '/boot', '/dev', '/etc', '/home', '/initrd', '/lib',
                   '/var']
 
 HELP_TEXT = '''
-usage: trash [-r] file1 [file2...]
+usage: trash [-rf] <files>...
 
 options:
+  -f  Delete files forever.
   -r  Recursively remove directories.
 '''.strip()
 
@@ -34,6 +35,14 @@ UNIQ_FILENAME_FMT = '{root}__{n}{ext}'
 def yellow(s):
     ''' Yellow tty text. '''
     return colorama.Fore.YELLOW + s + colorama.Fore.RESET
+
+
+def remove_item(item):
+    ''' Remove file or directory. '''
+    if os.path.isdir(item):
+        shutil.rmtree(item)
+    else:
+        os.remove(item)
 
 
 def confirm(prompt):
@@ -99,49 +108,53 @@ def remove_old_trash():
 
 
 def main():
-    args = sys.argv[1:]
-    recurse = False
+    args = docopt(HELP_TEXT)
 
-    # Check for recursive flag.
-    if len(args) > 0 and args[0] == '-r':
-        recurse = True
-        args = args[1:]
+    recurse = args['-r']
+    forever = args['-f']
+    files = args['<files>']
 
-    if len(args) == 0:
-        print(HELP_TEXT)
-        return 1
+    # If the user passes -f, confirm intention to delete items forever.
+    if forever:
+        prompt = '{} flag used; delete forever? [yN] '.format(yellow('-f'))
+        if not confirm(prompt):
+            print('Aborted.')
+            return 1
 
     # Prompt user for confirmation if multiple items are to be deleted.
-    if len(args) > 1:
-        n = str(len(args))
+    if len(files) > 1:
+        n = str(len(files))
         prompt = 'Multiple items ({}) passed for removal. Continue? [yN] '.format(yellow(n))
         if not confirm(prompt):
             print('Aborted.')
             return 1
 
     # Check for protected directories.
-    for arg in args:
-        if arg in PROTECTED_DIRS:
-            print('{} is protected. Aborting.'.format(yellow(arg)))
+    for f in files:
+        if f in PROTECTED_DIRS:
+            print('{} is protected. Aborting.'.format(yellow(f)))
             return 1
 
-    for arg in args:
+    for f in files:
         # Use lexists because we also want to be able to delete broken symlinks.
-        if not os.path.lexists(arg):
-            print('Could not find {}. Aborting.'.format(yellow(arg)))
+        if not os.path.lexists(f):
+            print('Could not find {}. Aborting.'.format(yellow(f)))
             return 1
 
         # Check for directory (that isn't a symlink) without the recursive flag.
-        if os.path.isdir(arg) and not os.path.islink(arg) and not recurse:
+        if os.path.isdir(f) and not os.path.islink(f) and not recurse:
             print('{} is a directory, but {} flag was not used. Aborting.'
-                  .format(yellow(arg), yellow('-r')))
+                  .format(yellow(f), yellow('-r')))
             return 1
 
-    now_dir = make_now_dir()
-    remove_old_trash()
-
-    for arg in args:
-        move_uniq(arg, now_dir)
+    if forever:
+        for f in files:
+            remove_item(f)
+    else:
+        now_dir = make_now_dir()
+        remove_old_trash()
+        for f in files:
+            move_uniq(f, now_dir)
 
     return 0
 
