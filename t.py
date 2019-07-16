@@ -8,8 +8,8 @@ import colorama
 from docopt import docopt
 
 
-TRASH_DIR = os.path.expanduser('~/.trash')
-N_DAYS_TO_KEEP = 7
+TRASH_DIR = os.path.expanduser('~/.trash')  # where to keep the trash
+N_DAYS_TO_KEEP = 7  # number of days of trash to keep
 
 # These directories are not removed.
 PROTECTED_DIRS = ['/bin', '/boot', '/dev', '/etc', '/home', '/initrd', '/lib',
@@ -136,23 +136,26 @@ def main():
             return 1
 
     for f in files:
-        # Use lexists because we also want to be able to delete broken symlinks.
+        # Use lexists because we also want to be able to delete broken
+        # symlinks.
         if not os.path.lexists(f):
             print('Could not find {}. Aborting.'.format(yellow(f)))
             return 1
 
-        # Check for directory (that isn't a symlink) without the recursive flag.
+        # Check for directory (that isn't a symlink) without the recursive
+        # flag.
         if os.path.isdir(f) and not os.path.islink(f) and not recurse:
             print('{} is a directory, but {} flag was not used. Aborting.'
                   .format(yellow(f), yellow('-r')))
             return 1
+
+    remove_old_trash()
 
     if forever:
         for f in files:
             remove_item(f)
     else:
         now_dir = make_now_dir()
-        remove_old_trash()
         for f in files:
             move_uniq(f, now_dir)
 
