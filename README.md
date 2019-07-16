@@ -19,8 +19,18 @@ it is much simpler than larger projects like
   system directories.
 * Prompts user for confirmation before removing multiple items.
 * Keeps deleted items for a configurable number of days before automatically
-  permanently deleting them.
+  permanently deleting them. Permanent deletion requires the `-f` flag and
+  prompts for confirmation.
 * Only deletes multiple files if no error occurs with any one of them.
+
+## Usage
+```
+usage: trash [-rf] <files>...
+
+options:
+  -f  Delete files forever.
+  -r  Recursively remove directories.
+```
 
 ## License
 MIT - see the LICENSE file.
