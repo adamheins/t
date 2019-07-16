@@ -34,7 +34,7 @@ UNIQ_FILENAME_FMT = '{root}__{n}{ext}'
 
 def yellow(s):
     ''' Yellow tty text. '''
-    return colorama.Fore.YELLOW + s + colorama.Fore.RESET
+    return colorama.Fore.YELLOW + str(s) + colorama.Fore.RESET
 
 
 def remove_item(item):
@@ -107,6 +107,47 @@ def remove_old_trash():
             shutil.rmtree(os.path.join(TRASH_DIR, d))
 
 
+def validate_removal(files, recurse, forever):
+    ''' Returns True if passed files can and should be deleted, False
+        otherwise. '''
+    # Check for protected directories.
+    for f in files:
+        if f in PROTECTED_DIRS:
+            print('{} is protected. Aborting.'.format(yellow(f)))
+            return False
+
+    for f in files:
+        # Use lexists because we also want to be able to delete broken
+        # symlinks.
+        if not os.path.lexists(f):
+            print('Could not find {}. Aborting.'.format(yellow(f)))
+            return False
+
+        # Check for directory (that isn't a symlink) without the recursive
+        # flag.
+        if os.path.isdir(f) and not os.path.islink(f) and not recurse:
+            print('{} is a directory, but {} flag was not used. Aborting.'
+                  .format(yellow(f), yellow('-r')))
+            return False
+
+    num_files = len(files)
+
+    # Confirm deleting multiple files and permanent deletion.
+    if num_files > 1 and forever:
+        prompt = 'Delete {} files {}? [yN]'.format(yellow(num_files),
+                                                   yellow('forever'))
+    elif num_files > 1:
+        prompt = 'Multiple items ({}) passed for removal. Continue? [yN] '.format(yellow(num_files))
+    elif forever:
+        prompt = 'Delete {}? [yN] '.format(yellow('forever'))
+
+    if not confirm(prompt):
+        print('Aborted.')
+        return False
+
+    return True
+
+
 def main():
     args = docopt(HELP_TEXT)
 
@@ -114,40 +155,8 @@ def main():
     forever = args['-f']
     files = args['<files>']
 
-    # If the user passes -f, confirm intention to delete items forever.
-    if forever:
-        prompt = '{} flag used; delete forever? [yN] '.format(yellow('-f'))
-        if not confirm(prompt):
-            print('Aborted.')
-            return 1
-
-    # Prompt user for confirmation if multiple items are to be deleted.
-    if len(files) > 1:
-        n = str(len(files))
-        prompt = 'Multiple items ({}) passed for removal. Continue? [yN] '.format(yellow(n))
-        if not confirm(prompt):
-            print('Aborted.')
-            return 1
-
-    # Check for protected directories.
-    for f in files:
-        if f in PROTECTED_DIRS:
-            print('{} is protected. Aborting.'.format(yellow(f)))
-            return 1
-
-    for f in files:
-        # Use lexists because we also want to be able to delete broken
-        # symlinks.
-        if not os.path.lexists(f):
-            print('Could not find {}. Aborting.'.format(yellow(f)))
-            return 1
-
-        # Check for directory (that isn't a symlink) without the recursive
-        # flag.
-        if os.path.isdir(f) and not os.path.islink(f) and not recurse:
-            print('{} is a directory, but {} flag was not used. Aborting.'
-                  .format(yellow(f), yellow('-r')))
-            return 1
+    if not validate_removal(files, recurse, forever):
+        return 1
 
     remove_old_trash()
 
