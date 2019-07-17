@@ -140,11 +140,12 @@ def validate_removal(files, recurse, forever):
         prompt = 'Multiple items ({}) passed for removal. Continue? [yN] '.format(yellow(num_files))
     elif forever:
         prompt = 'Delete {}? [yN] '.format(yellow('forever'))
+    else:
+        return True
 
     if not confirm(prompt):
         print('Aborted.')
         return False
-
     return True
 
 
