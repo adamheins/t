@@ -4,7 +4,6 @@ import datetime
 import os
 import shutil
 
-import colorama
 from docopt import docopt
 
 
@@ -32,9 +31,20 @@ TIME_FMT = '%H-%M-%S'
 UNIQ_FILENAME_FMT = '{root}__{n}{ext}'
 
 
+class Color:
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    END = '\033[0m'
+
+
 def yellow(s):
-    ''' Yellow tty text. '''
-    return colorama.Fore.YELLOW + str(s) + colorama.Fore.RESET
+    return Color.YELLOW + str(s) + Color.END
+
+
+def underline(s):
+    return Color.UNDERLINE + str(s) + Color.END
 
 
 def remove_item(item):
@@ -135,11 +145,12 @@ def validate_removal(files, recurse, forever):
     # Confirm deleting multiple files and permanent deletion.
     if num_files > 1 and forever:
         prompt = 'Delete {} files {}? [yN]'.format(yellow(num_files),
-                                                   yellow('forever'))
+                                                   underline('forever'))
     elif num_files > 1:
         prompt = 'Multiple items ({}) passed for removal. Continue? [yN] '.format(yellow(num_files))
     elif forever:
-        prompt = 'Delete {}? [yN] '.format(yellow('forever'))
+        prompt = 'Delete {} {}? [yN] '.format(yellow(files[0]),
+                                              underline('forever'))
     else:
         return True
 
