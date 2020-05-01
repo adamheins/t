@@ -97,6 +97,12 @@ def make_now_dir():
     path = os.path.join(TRASH_DIR, date_dir, time_dir)
     os.makedirs(path, exist_ok=True)
 
+    # create a symlink to the most recent trash item
+    link_path = os.path.join(TRASH_DIR, 'last')
+    if os.path.exists(link_path):
+        os.remove(link_path)
+    os.symlink(path, link_path)
+
     return path
 
 
@@ -158,6 +164,13 @@ def validate_removal(files, recurse, forever):
         print('Aborted.')
         return False
     return True
+
+
+def restore():
+    link_path = os.path.join(TRASH_DIR, 'last')
+    last_path = os.readlink(link_path)
+    files = os.listdir(last_path)
+    print(files)
 
 
 def main():
