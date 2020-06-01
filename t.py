@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
+import sys
 import datetime
 import os
+from pathlib import Path
 import shutil
 
 from docopt import docopt
@@ -53,6 +55,31 @@ def remove_item(item):
         shutil.rmtree(item)
     else:
         os.remove(item)
+
+
+def dir_size(path):
+    ''' Calculate size of files in all subdirectories. '''
+    # See https://stackoverflow.com/questions/1392413/calculating-a-directorys-size-using-python
+    path = Path(path)
+
+    # include the size of the directory itself
+    total_size = path.stat().st_size
+
+    for f in path.glob('**/*'):
+        total_size += f.stat().st_size
+
+    return total_size
+
+
+def readable_size(size):
+    ''' Return a string representing a human-readable size of bytes. '''
+    if size < 1e3:
+        return '{} bytes'.format(size)
+    if size < 1e6:
+        return '{:.1f}K'.format(size / 1e3)
+    if size < 1e9:
+        return '{:.1f}M'.format(size / 1e6)
+    return '{:.1f}G'.format(size / 1e9)
 
 
 def confirm(prompt):
@@ -120,7 +147,11 @@ def remove_old_trash():
         except ValueError:
             continue
         if date < today - days_to_keep:
-            shutil.rmtree(os.path.join(TRASH_DIR, d))
+            path = os.path.join(TRASH_DIR, d)
+            size = dir_size(path)
+            size = readable_size(size)
+            print('Removing {} of old trash.'.format(size))
+            shutil.rmtree(path)
 
 
 def validate_removal(files, recurse, forever):
@@ -167,6 +198,8 @@ def validate_removal(files, recurse, forever):
 
 
 def restore():
+    # TODO this is initial, incomplete work to add a restore functionality to
+    # removed trash, for ease of use
     link_path = os.path.join(TRASH_DIR, 'last')
     last_path = os.readlink(link_path)
     files = os.listdir(last_path)
