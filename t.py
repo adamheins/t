@@ -66,7 +66,8 @@ def dir_size(path):
     total_size = path.stat().st_size
 
     for f in path.glob('**/*'):
-        total_size += f.stat().st_size
+        if f.is_file() or f.is_dir():
+            total_size += f.stat().st_size
 
     return total_size
 
@@ -150,8 +151,9 @@ def remove_old_trash():
             path = os.path.join(TRASH_DIR, d)
             size = dir_size(path)
             size = readable_size(size)
-            print('Removing {} of old trash.'.format(size))
+            print('Removing {} of old trash...'.format(size), end=' ')
             shutil.rmtree(path)
+            print('done.')
 
 
 def validate_removal(files, recurse, forever):
