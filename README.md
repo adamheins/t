@@ -23,6 +23,10 @@ it is much simpler than larger projects like
   prompts for confirmation.
 * Only deletes multiple files if no error occurs with any one of them.
 
+## Install
+1. Clone this repository.
+2. From the repository root, run `python setup.py install`.
+
 ## Usage
 ```
 usage: trash [-rf] <files>...
