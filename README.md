@@ -19,9 +19,10 @@ it is much simpler than larger projects like
   system directories.
 * Prompts user for confirmation before removing multiple items.
 * Keeps deleted items for a configurable number of days before automatically
-  permanently deleting them. Permanent deletion requires the `-f` flag and
-  prompts for confirmation.
-* Only deletes multiple files if no error occurs with any one of them.
+  permanently deleting them. Immediate permanent deletion requires the `-f`
+  flag and prompts for confirmation.
+* Atomic removal: only deletes multiple files if no error occurs with any one
+  of them.
 
 ## Install
 1. Clone this repository.
