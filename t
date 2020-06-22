@@ -115,7 +115,7 @@ def move_uniq(src, dst):
     shutil.move(src, dst)
 
 
-def make_now_dir():
+def make_dir_stamped():
     ''' Make directories for the trash. '''
     # trash is filed under <TRASH_DIR>/YYYY-MM-DD/HH-MM-SS
     now = datetime.datetime.now()
@@ -142,6 +142,11 @@ def remove_old_trash():
     # We use the +1 to round up the delta.
     days_to_keep = datetime.timedelta(days=N_DAYS_TO_KEEP+1)
 
+    dirs_to_remove = []
+    size_to_remove = 0
+
+    # Find all directories older than N_DAYS_TO_KEEP days (based on the
+    # timestamp in their name).
     for d in dirs:
         try:
             date = datetime.datetime.strptime(d, DATE_FMT)
@@ -150,10 +155,18 @@ def remove_old_trash():
         if date < today - days_to_keep:
             path = os.path.join(TRASH_DIR, d)
             size = dir_size(path)
-            size = readable_size(size)
-            print('Removing {} of old trash...'.format(size), end=' ')
-            shutil.rmtree(path)
-            print('done.')
+
+            dirs_to_remove.append(path)
+            size_to_remove += size
+
+    if len(dirs_to_remove) == 0:
+        return
+
+    size_to_remove = readable_size(size_to_remove)
+    print('Removing {} of old trash...'.format(size_to_remove), end=' ')
+    for path in dirs_to_remove:
+        shutil.rmtree(path)
+    print('done.')
 
 
 def validate_removal(files, recurse, forever):
@@ -224,7 +237,7 @@ def main():
         for f in files:
             remove_item(f)
     else:
-        now_dir = make_now_dir()
+        now_dir = make_dir_stamped()
         for f in files:
             move_uniq(f, now_dir)
 
