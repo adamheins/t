@@ -172,13 +172,22 @@ def remove_old_trash():
 def validate_removal(files, recurse, forever):
     ''' Returns True if passed files can and should be deleted, False
         otherwise. '''
-    # Check for protected directories.
     for f in files:
+        # Check for protected directories.
         if f in PROTECTED_DIRS:
             print('{} is protected. Aborting.'.format(yellow(f)))
             return False
 
-    for f in files:
+        # To move a file, we need execute and write permissions on the parent
+        # directory (no permissions are required on the file itself). Abort if
+        # we don't have these permissions.
+        fullpath = os.path.abspath(f)
+        parent = os.path.dirname(fullpath)
+        moveable = os.access(parent, os.X_OK + os.W_OK)
+        if not moveable:
+            print('Cannot remove {}: permission denied. Aborting.'.format(yellow(f)))
+            return False
+
         # Use lexists because we also want to be able to delete broken
         # symlinks.
         if not os.path.lexists(f):
