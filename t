@@ -127,7 +127,7 @@ def make_dir_stamped():
 
     # create a symlink to the most recent trash item
     link_path = os.path.join(TRASH_DIR, 'last')
-    if os.path.exists(link_path):
+    if os.path.lexists(link_path):
         os.remove(link_path)
     os.symlink(path, link_path)
 
