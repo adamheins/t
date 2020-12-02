@@ -240,6 +240,9 @@ def main():
     if not validate_removal(files, recurse, forever):
         return 1
 
+    if not os.path.exists(TRASH_DIR):
+        os.mkdir(TRASH_DIR)
+
     remove_old_trash()
 
     if forever:
