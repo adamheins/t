@@ -15,5 +15,5 @@ setup(name='t',
       install_requires=['docopt'],
       license='MIT',
       scripts=['t'],
-      python_requires='>=3.5',
+      python_requires='>=3.6',
       zip_safe=False)

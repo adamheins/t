@@ -9,36 +9,58 @@ import shutil
 from docopt import docopt
 
 
-TRASH_DIR = os.path.expanduser('~/.trash')  # where to keep the trash
+TRASH_DIR = Path("~/.trash").expanduser()  # where to keep the trash
 N_DAYS_TO_KEEP = 7  # number of days of trash to keep
 
 # These directories are not removed.
-PROTECTED_DIRS = ['/bin', '/boot', '/dev', '/etc', '/home', '/initrd', '/lib',
-                  '/lib32', '/lib64', '/proc', '/root', '/sbin', '/sys',
-                  '/usr', '/usr/bin', '/usr/include', '/usr/lib', '/usr/local',
-                  '/usr/local/bin', '/usr/local/include', '/usr/local/sbin',
-                  '/usr/local/share', '/usr/sbin', '/usr/share', '/usr/src',
-                  '/var']
+PROTECTED_DIRS = [
+    "/bin",
+    "/boot",
+    "/dev",
+    "/etc",
+    "/home",
+    "/initrd",
+    "/lib",
+    "/lib32",
+    "/lib64",
+    "/proc",
+    "/root",
+    "/sbin",
+    "/sys",
+    "/usr",
+    "/usr/bin",
+    "/usr/include",
+    "/usr/lib",
+    "/usr/local",
+    "/usr/local/bin",
+    "/usr/local/include",
+    "/usr/local/sbin",
+    "/usr/local/share",
+    "/usr/sbin",
+    "/usr/share",
+    "/usr/src",
+    "/var",
+]
 
-HELP_TEXT = '''
+HELP_TEXT = """
 usage: trash [-rf] <files>...
 
 options:
   -f  Delete files forever.
   -r  Recursively remove directories.
-'''.strip()
+""".strip()
 
-DATE_FMT = '%Y-%m-%d'
-TIME_FMT = '%H-%M-%S'
-UNIQ_FILENAME_FMT = '{root}__{n}{ext}'
+DATE_FMT = "%Y-%m-%d"
+TIME_FMT = "%H-%M-%S"
+UNIQ_FILENAME_FMT = "{root}__{n}{ext}"
 
 
 class Color:
-    YELLOW = '\033[93m'
-    RED = '\033[91m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-    END = '\033[0m'
+    YELLOW = "\033[93m"
+    RED = "\033[91m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+    END = "\033[0m"
 
 
 def yellow(s):
@@ -50,7 +72,7 @@ def underline(s):
 
 
 def remove_item(item):
-    ''' Remove file or directory. '''
+    """Remove file or directory."""
     if os.path.isdir(item):
         shutil.rmtree(item)
     else:
@@ -58,14 +80,14 @@ def remove_item(item):
 
 
 def dir_size(path):
-    ''' Calculate size of files in all subdirectories. '''
+    """Calculate size of files in all subdirectories."""
     # See https://stackoverflow.com/questions/1392413/calculating-a-directorys-size-using-python
     path = Path(path)
 
     # include the size of the directory itself
     total_size = path.stat().st_size
 
-    for f in path.glob('**/*'):
+    for f in path.glob("**/*"):
         if f.is_file() or f.is_dir():
             total_size += f.stat().st_size
 
@@ -73,27 +95,28 @@ def dir_size(path):
 
 
 def readable_size(size):
-    ''' Return a string representing a human-readable size of bytes. '''
+    """Return a string representing a human-readable size of bytes."""
     if size < 1e3:
-        return '{} bytes'.format(size)
+        return "{} bytes".format(size)
     if size < 1e6:
-        return '{:.1f}K'.format(size / 1e3)
+        return "{:.1f}K".format(size / 1e3)
     if size < 1e9:
-        return '{:.1f}M'.format(size / 1e6)
-    return '{:.1f}G'.format(size / 1e9)
+        return "{:.1f}M".format(size / 1e6)
+    return "{:.1f}G".format(size / 1e9)
 
 
 def confirm(prompt):
-    ''' Prompt user for confirmation. '''
+    """Prompt user for confirmation."""
     ans = input(prompt)
     if len(ans) > 0:
-        return ans[0] == 'y' or ans[0] == 'Y'
+        return ans[0] == "y" or ans[0] == "Y"
     return False
 
 
 def uniq_name(filename, dirname):
-    ''' Return a unique name based on `filename` relative to the files in
-        directory `dirname`. '''
+    """Return a unique name based on `filename` relative to the files in
+    directory `dirname`.
+    """
     root, ext = os.path.splitext(filename)
 
     counter = 1
@@ -107,8 +130,9 @@ def uniq_name(filename, dirname):
 
 
 def move_uniq(src, dst):
-    ''' Move src to directory dst, creating a unique name for src so that it is
-        unique in dst. '''
+    """Move src to directory dst, creating a unique name for src so that it is
+    unique in dst.
+    """
     name = os.path.basename(src)
     name = uniq_name(name, dst)
     dst = os.path.join(dst, name)
@@ -116,44 +140,48 @@ def move_uniq(src, dst):
 
 
 def make_dir_stamped():
-    ''' Make directories for the trash. '''
+    """Make directories for the trash."""
     # trash is filed under <TRASH_DIR>/YYYY-MM-DD/HH-MM-SS
     now = datetime.datetime.now()
     date_dir = now.strftime(DATE_FMT)
     time_dir = now.strftime(TIME_FMT)
 
-    path = os.path.join(TRASH_DIR, date_dir, time_dir)
-    os.makedirs(path, exist_ok=True)
+    path = TRASH_DIR.joinpath(date_dir, time_dir)
+    path.mkdir(exist_ok=True)
 
     # create a symlink to the most recent trash item
-    link_path = os.path.join(TRASH_DIR, 'last')
+    link_path = TRASH_DIR.joinpath("last")
     if os.path.lexists(link_path):
-        os.remove(link_path)
-    os.symlink(path, link_path)
+        link_path.unlink()
+    link_path.symlink_to(path)
 
     return path
 
 
 def remove_old_trash():
-    ''' Remove old trash that has been around for too long. '''
-    dirs = os.listdir(TRASH_DIR)
+    """Remove old trash that has been around for too long."""
     today = datetime.datetime.now()
 
     # We use the +1 to round up the delta.
-    days_to_keep = datetime.timedelta(days=N_DAYS_TO_KEEP+1)
+    days_to_keep = datetime.timedelta(days=N_DAYS_TO_KEEP + 1)
 
     dirs_to_remove = []
     size_to_remove = 0
 
+    found_trash_to_remove = False
+
     # Find all directories older than N_DAYS_TO_KEEP days (based on the
     # timestamp in their name).
-    for d in dirs:
+    for d in TRASH_DIR.iterdir():
         try:
-            date = datetime.datetime.strptime(d, DATE_FMT)
+            date = datetime.datetime.strptime(d.name, DATE_FMT)
         except ValueError:
             continue
         if date < today - days_to_keep:
-            path = os.path.join(TRASH_DIR, d)
+            if not found_trash_to_remove:
+                print("Removing old trash...", end=" ")
+                found_trash_to_remove = True
+            path = TRASH_DIR.joinpath(d)
             size = dir_size(path)
 
             dirs_to_remove.append(path)
@@ -162,61 +190,60 @@ def remove_old_trash():
     if len(dirs_to_remove) == 0:
         return
 
-    size_to_remove = readable_size(size_to_remove)
-    print('Removing {} of old trash...'.format(size_to_remove), end=' ')
     for path in dirs_to_remove:
         shutil.rmtree(path)
-    print('done.')
+
+    size_to_remove = readable_size(size_to_remove)
+    print(f"done. Removed {size_to_remove}.")
 
 
 def validate_removal(files, recurse, forever):
-    ''' Returns True if passed files can and should be deleted, False
-        otherwise. '''
+    """Returns True if passed files can and should be deleted, False
+    otherwise.
+    """
     for f in files:
+        f_fmt = yellow(f)
+
         # Check for protected directories.
         if f in PROTECTED_DIRS:
-            print('{} is protected. Aborting.'.format(yellow(f)))
+            print(f"{f_fmt} is protected. Aborting.")
             return False
 
         # To move a file, we need execute and write permissions on the parent
         # directory (no permissions are required on the file itself). Abort if
         # we don't have these permissions.
-        fullpath = os.path.abspath(f)
-        parent = os.path.dirname(fullpath)
-        moveable = os.access(parent, os.X_OK + os.W_OK)
+        fullpath = Path(f).resolve()
+        moveable = os.access(fullpath.parent, os.X_OK + os.W_OK)
         if not moveable:
-            print('Cannot remove {}: permission denied. Aborting.'.format(yellow(f)))
+            print(f"Cannot remove {f_fmt}: permission denied. Aborting.")
             return False
 
         # Use lexists because we also want to be able to delete broken
         # symlinks.
         if not os.path.lexists(f):
-            print('Could not find {}. Aborting.'.format(yellow(f)))
+            print(f"Could not find {f_fmt}. Aborting.")
             return False
 
         # Check for directory (that isn't a symlink) without the recursive
         # flag.
         if os.path.isdir(f) and not os.path.islink(f) and not recurse:
-            print('{} is a directory, but {} flag was not used. Aborting.'
-                  .format(yellow(f), yellow('-r')))
+            print(f"{f_fmt} is a directory, but {yellow('-r')} flag was not used. Aborting.")
             return False
 
     num_files = len(files)
 
     # Confirm deleting multiple files and permanent deletion.
     if num_files > 1 and forever:
-        prompt = 'Delete {} files {}? [yN]'.format(yellow(num_files),
-                                                   underline('forever'))
+        prompt = f"Delete {yellow(num_files)} files {underline('forever')}? [yN]"
     elif num_files > 1:
-        prompt = 'Multiple items ({}) passed for removal. Continue? [yN] '.format(yellow(num_files))
+        prompt = f"Multiple items ({yellow(num_files)}) passed for removal. Continue? [yN] "
     elif forever:
-        prompt = 'Delete {} {}? [yN] '.format(yellow(files[0]),
-                                              underline('forever'))
+        prompt = "Delete {yellow(files[0])} {underline('forever')}? [yN] "
     else:
         return True
 
     if not confirm(prompt):
-        print('Aborted.')
+        print("Aborted.")
         return False
     return True
 
@@ -224,26 +251,33 @@ def validate_removal(files, recurse, forever):
 def restore():
     # TODO this is initial, incomplete work to add a restore functionality to
     # removed trash, for ease of use
-    link_path = os.path.join(TRASH_DIR, 'last')
-    last_path = os.readlink(link_path)
-    files = os.listdir(last_path)
+    last_path = TRASH_DIR.joinpath("last").readlink()
+    files = list(last_path.iterdir())
     print(files)
 
 
 def main():
+    # print("hello!")
     args = docopt(HELP_TEXT)
 
-    recurse = args['-r']
-    forever = args['-f']
-    files = args['<files>']
+    recurse = args["-r"]
+    forever = args["-f"]
+    files = args["<files>"]
 
     if not validate_removal(files, recurse, forever):
         return 1
 
-    if not os.path.exists(TRASH_DIR):
-        os.mkdir(TRASH_DIR)
+    if not TRASH_DIR.exists():
+        TRASH_DIR.mkdir()
 
-    remove_old_trash()
+    # TODO we can get an issue where we can move a directory with a nested
+    # unremovable file (subdirectory and file it contains both
+    # unwriteable), but then we cannot remove it
+    try:
+        remove_old_trash()
+    except PermissionError as e:
+        print(e)
+        print("There was a problem removing old trash.")
 
     if forever:
         for f in files:
@@ -251,10 +285,12 @@ def main():
     else:
         now_dir = make_dir_stamped()
         for f in files:
+            # TODO this will fail if the is a non-removable file in a
+            # subdirectory
             move_uniq(f, now_dir)
 
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
