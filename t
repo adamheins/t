@@ -147,7 +147,7 @@ def make_dir_stamped():
     time_dir = now.strftime(TIME_FMT)
 
     path = TRASH_DIR.joinpath(date_dir, time_dir)
-    path.mkdir(exist_ok=True)
+    path.mkdir(parents=True)
 
     # create a symlink to the most recent trash item
     link_path = TRASH_DIR.joinpath("last")
@@ -285,7 +285,7 @@ def main():
     else:
         now_dir = make_dir_stamped()
         for f in files:
-            # TODO this will fail if the is a non-removable file in a
+            # TODO this will fail if there is a non-removable file in a
             # subdirectory
             move_uniq(f, now_dir)
 
