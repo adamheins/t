@@ -179,7 +179,7 @@ def remove_old_trash():
             continue
         if date < today - days_to_keep:
             if not found_trash_to_remove:
-                print("Removing old trash...", end=" ")
+                print("Removing old trash...", end=" ", flush=True)
                 found_trash_to_remove = True
             path = TRASH_DIR.joinpath(d)
             size = dir_size(path)
