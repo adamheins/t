@@ -1,28 +1,28 @@
 # t
 
-Simple CLI tool for removing files.
-
-## Motivation
+Simple CLI tool for removing files safely. Wraps
+[trash-cli](https://github.com/andreafrancia/trash-cli).
 
 I make mistakes, but I don't want one of those mistakes to be accidentally
-permanently deleting an important file. I spend much of my computer time in the
-terminal, but `rm` can be a dangerous thing. There are already tools that seek
-to remedy this problem; `t` is another one. 
+permanently deleting an important file. Inspired by
+[safe-rm](https://launchpad.net/safe-rm), I originally wrote this as a more
+interactive alternative to `rm` that keeps files for a while before permanent
+deletion and provides more interactive prompts.
 
-`t` is designed for interactive use, and incorporates more protections for
-this usecase than [safe-rm](https://launchpad.net/safe-rm). At the same time,
-it is much simpler than larger projects like
-[trash-cli](http://code.google.com/p/trash-cli/).
+Then I discovered the [XDG trash
+spec](https://freedesktop.org/wiki/Specifications/trash-spec/) and the CLI
+implementation [trash-cli](https://github.com/andreafrancia/trash-cli).
+Allowing trash-cli to do the heavy lifting, I converted this project to a
+simple wrapper around trash-cli's `trash-put` command.
 
-## Features
-* Incorporates directory blacklist like `safe-rm` to avoid deleting important
-  system directories.
-* Prompts user for confirmation before removing multiple items.
-* Keeps deleted items for a configurable number of days before automatically
-  permanently deleting them. Immediate permanent deletion requires the `-f`
-  flag and prompts for confirmation.
-* Atomic removal: only deletes multiple files if no error occurs with any one
-  of them.
+The goal of `t` is to ensure you don't make mistakes deleting files. To that
+end, it adds the following on top of trash-cli's `trash-put`:
+
+* incorporates directory exclusion list like safe-rm to avoid deleting
+  important system directories;
+* prompts user for confirmation before removing multiple items;
+* does require `-r` for directories;
+* only deletes multiple files if no error occurs with any one of them.
 
 ## Install
 1. Clone this repository.
@@ -30,10 +30,9 @@ it is much simpler than larger projects like
 
 ## Usage
 ```
-usage: trash [-rf] <files>...
+usage: t [-r] <files>...
 
 options:
-  -f  Delete files forever.
   -r  Recursively remove directories.
 ```
 
