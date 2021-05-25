@@ -13,7 +13,8 @@ Then I discovered the [XDG trash
 spec](https://freedesktop.org/wiki/Specifications/trash-spec/) and the CLI
 implementation [trash-cli](https://github.com/andreafrancia/trash-cli).
 Allowing trash-cli to do the heavy lifting, I converted this project to a
-simple wrapper around trash-cli's `trash-put` command.
+simple wrapper around trash-cli's `trash-put` command. I wrote a bit about
+different "safer `rm`" options [here](https://adamheins.com/blog/a-safer-rm).
 
 The goal of `t` is to ensure you don't make mistakes deleting files. To that
 end, it adds the following on top of trash-cli's `trash-put`:
