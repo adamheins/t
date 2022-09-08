@@ -124,7 +124,6 @@ def validate_removal(files, recurse):
 
 
 def main():
-    # print("hello!")
     args = docopt(HELP_TEXT)
 
     recurse = args["-r"]
@@ -134,9 +133,6 @@ def main():
         return 1
 
     return put_main()
-
-    # import IPython
-    # IPython.embed()
 
 
 if __name__ == "__main__":
