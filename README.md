@@ -37,5 +37,13 @@ options:
   -r  Recursively remove directories.
 ```
 
+## Automatically empty trash
+Install [trash-cli](https://github.com/andreafrancia/trash-cli), then use the
+`trash-empty` script in a cronjob. Run `crontab -e` and add something like
+```
+@daily /path/to/trash-cli/trash-empty 30
+```
+which removes items in the trash older than 30 days everyday.
+
 ## License
 MIT - see the LICENSE file.
