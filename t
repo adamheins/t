@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 
 from docopt import docopt
-from trashcli.put import main as put_main
+from trashcli.put.main import main as put_main
 
 
 # These directories are not removed.
