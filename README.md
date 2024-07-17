@@ -26,8 +26,11 @@ end, it adds the following on top of trash-cli's `trash-put`:
 * only deletes multiple files if no error occurs with any one of them.
 
 ## Install
+
+It is recommended to install using [pipx](https://pipx.pypa.io/stable/):
+
 1. Clone this repository.
-2. From the repository root, run `python setup.py install`.
+2. From the repository root, run `pipx install .`.
 
 ## Usage
 ```
