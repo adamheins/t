@@ -46,7 +46,12 @@ Install [trash-cli](https://github.com/andreafrancia/trash-cli), then use the
 ```
 @daily /path/to/trash-cli/trash-empty 30
 ```
-which removes items in the trash older than 30 days everyday.
+which removes items in the trash older than 30 days everyday. Alternatively, you may want to use something like
+```
+0 * * * * /path/to/trash-cli/trash-empty 30
+```
+to empty the trash every hour. The `@daily` directive is run by anacron under
+the root user by default, which does not empty the user's trash properly.
 
 ## License
 MIT - see the LICENSE file.
