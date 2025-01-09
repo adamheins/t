@@ -28,9 +28,9 @@ end, it adds the following on top of trash-cli's `trash-put`:
 ## Install
 
 It is recommended to install using [pipx](https://pipx.pypa.io/stable/):
-
-1. Clone this repository.
-2. From the repository root, run `pipx install .`.
+```
+pipx install git+https://github.com/adamheins/t.git
+```
 
 ## Usage
 ```
