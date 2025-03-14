@@ -27,10 +27,9 @@ end, it adds the following on top of trash-cli's `trash-put`:
 
 ## Install
 
-It is recommended to install using [pipx](https://pipx.pypa.io/stable/):
-
-1. Clone this repository.
-2. From the repository root, run `pipx install .`.
+Clone the repo, go into the repository root directory, and then:
+* install with [uv](https://docs.astral.sh/uv/): `uv tool install .`, or
+* install with [pipx](https://pipx.pypa.io/stable/): `pipx install .`.
 
 ## Usage
 ```
