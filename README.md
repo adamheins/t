@@ -27,9 +27,14 @@ end, it adds the following on top of trash-cli's `trash-put`:
 
 ## Install
 
-Clone the repo, go into the repository root directory, and then:
-* install with [uv](https://docs.astral.sh/uv/): `uv tool install .`, or
-* install with [pipx](https://pipx.pypa.io/stable/): `pipx install .`.
+Install with [uv](https://docs.astral.sh/uv/): 
+```
+uv tool install git+https://github.com/adamheins/t.git
+```
+or [pipx](https://pipx.pypa.io/stable/):
+```
+pipx install git+https://github.com/adamheins/t.git
+```
 
 ## Usage
 ```
