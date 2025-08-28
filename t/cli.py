@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-
-import sys
+"""A simple CLI tool for removing files safely."""
+import argparse
 import os
 from pathlib import Path
+import sys
 
-from docopt import docopt
+import colorama
 from trashcli.put.main import main as put_main
 
 
@@ -38,32 +39,10 @@ PROTECTED_DIRS = [
     "/var",
 ]
 
-HELP_TEXT = """
-usage: trash [-r] <files>...
-
-options:
-  -r  Recursively remove directories.
-""".strip()
-
-
-class Color:
-    """Terminal color escape sequences."""
-
-    YELLOW = "\033[93m"
-    RED = "\033[91m"
-    BOLD = "\033[1m"
-    UNDERLINE = "\033[4m"
-    END = "\033[0m"
-
 
 def yellow(s):
     """Color string `s` yellow in the terminal."""
-    return Color.YELLOW + str(s) + Color.END
-
-
-def underline(s):
-    """Underline string `s` in the terminal."""
-    return Color.UNDERLINE + str(s) + Color.END
+    return colorama.Fore.YELLOW + str(s) + colorama.Fore.RESET
 
 
 def confirm(prompt):
@@ -75,7 +54,7 @@ def confirm(prompt):
 
 
 def validate_removal(files, recurse):
-    """Returns True if passed files can and should be deleted, False otherwise. """
+    """Returns True if passed files can and should be deleted, False otherwise."""
     for f in files:
         f_fmt = yellow(f)
 
@@ -124,12 +103,16 @@ def validate_removal(files, recurse):
 
 
 def main():
-    args = docopt(HELP_TEXT)
+    parser = argparse.ArgumentParser(
+        prog="t", description="A simple CLI tool for removing files safely."
+    )
+    parser.add_argument("files", nargs="+", help="The files and directories to remove.")
+    parser.add_argument(
+        "-r", "--recurse", action="store_true", help="Recursively remove directories."
+    )
+    args = parser.parse_args()
 
-    recurse = args["-r"]
-    files = args["<files>"]
-
-    if not validate_removal(files, recurse):
+    if not validate_removal(files=args.files, recurse=args.recurse):
         return 1
 
     return put_main()
