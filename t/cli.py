@@ -88,11 +88,10 @@ def validate_removal(files, recurse):
 
     num_files = len(files)
 
-    # Confirm deleting multiple files and permanent deletion.
+    # Confirm deleting multiple files.
     if num_files > 1:
-        prompt = (
-            f"Multiple items ({yellow(num_files)}) passed for removal. Continue? [yN] "
-        )
+        files_fmted = "\n".join([f"  {yellow(f)}" for f in files])
+        prompt = f"Multiple items ({yellow(num_files)}) will be removed:\n{files_fmted}\nContinue? [yN] "
     else:
         return True
 
